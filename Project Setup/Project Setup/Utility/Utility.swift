@@ -58,4 +58,33 @@ class Utility {
             Utility.showAlert("Connection Error!", message: "Please check internet connection and retry.", viewController: (self.window?.rootViewController)!)
         }
     }
+    
+     func getSticker(url:String, apiType: APIType) {
+        if Utility.checkInternet(){
+            Alamofire.request(url, method: .get).responseJSON { (response) in
+                switch response.result {
+                case .success:
+                    let dic:[String:Any] = response.value as! [String : Any]
+                    if dic["stat"] as! String == "ok" {
+                        let photoset = dic["photoset"] as! [String:Any]
+                        self.delegate?.apiCallCompleted?(true, result: photoset, error: String(), apiType: apiType)
+                    } else {
+                        self.delegate?.apiCallCompleted?(false, result: [:], error: (dic["message"] as? String)! , apiType: apiType)
+                    }
+                    break
+                case .failure(let error):
+                    self.delegate?.apiCallCompleted?(false, result: [:], error: error.localizedDescription , apiType: apiType)
+                }
+            }
+        }
+        else{
+            let alert = UIAlertView()
+            alert.title = "Connection Error!"
+            alert.message = "Please check internet connection and retry."
+            alert.addButton(withTitle: "OK")
+            alert.show()
+        }
+    }
+    
+    
 }
